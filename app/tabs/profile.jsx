@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#E8380D",
     paddingBottom: 28,
     paddingTop: 16,
-    marginTop: 10,
+    marginTop: 2,
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
  
