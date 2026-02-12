@@ -1,15 +1,14 @@
-
-import { useState } from "react";
 import {
-  Modal,
-  Pressable,
-  ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
+  ScrollView,
+  TouchableOpacity,
+  StatusBar,
+  Modal,
+  Pressable,
 } from "react-native";
+import { useState } from "react";
 
 /* ─── Hamburger Icon Component ─── */
 function HamburgerIcon() {
@@ -290,7 +289,7 @@ export default function ProfileScreen() {
         </View>
 
         {/* ── RECENT ACTIVITY ── */}
-        <View style={styles.section}>
+        <View style={[styles.section, { marginBottom: 28 }]}>
           <Text style={styles.sectionLabel}>RECENT ACTIVITY</Text>
           <View style={styles.activityCard}>
             {RECENT_ACTIVITY.map((a, i) => (
