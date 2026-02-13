@@ -84,8 +84,17 @@ export default function Settings() {
           title="About App"
           onPress={() => router.push("/settings/about")}
         />
-        <SettingItem icon="help-circle-outline" title="Help & FAQ" />
-        <SettingItem icon="document-text-outline" title="Privacy Policy" />
+        <SettingItem
+          icon="help-circle-outline"
+          title="Help & FAQ"
+          onPress={() => router.push("/settings/help")}
+        />
+
+        <SettingItem
+          icon="document-text-outline"
+          title="Privacy Policy"
+          onPress={() => router.push("/settings/privacy")}
+        />
       </View>
 
       {/* 🚪 Account Actions */}
