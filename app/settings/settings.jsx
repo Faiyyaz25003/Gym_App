@@ -276,7 +276,7 @@ export default function Settings() {
           icon="log-out-outline"
           title="Logout"
           danger
-          onPress={() => router.replace("/login")}
+          onPress={() => router.replace("/auth/login")}
         />
         <SettingItem icon="trash-outline" title="Delete Account" danger />
       </View>
