@@ -110,6 +110,8 @@ export default function ProfileScreen() {
               onPress={() => {
                 setMenuOpen(false);
                 // navigation.navigate('ChangePassword')
+
+                router.push("/changePassword");
               }}
             >
               <View
