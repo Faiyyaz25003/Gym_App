@@ -6,7 +6,7 @@ const options = [
   { title: "Diet", icon: "nutrition", route: "/diet" },
   { title: "Exercise", icon: "fitness", route: "/exercise" },
   { title: "Profile", icon: "person", route: "/profile" },
-  { title: "Settings", icon: "settings", route: "/settings" },
+  { title: "Settings", icon: "settings", route: "/settings/settings" },
 ];
 
 export default function More() {

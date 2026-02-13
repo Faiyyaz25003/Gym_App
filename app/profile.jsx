@@ -48,7 +48,12 @@ const QUICK_ACTIONS = [
   },
   { label: "Schedule", icon: "📅", color: "#E07B00", route: "/home/schedule" },
   { label: "Reports", icon: "📊", color: "#0088CC", route: "home/dashboard" },
-  { label: "Settings", icon: "⚙️", color: "#7B3FBF", route: "/settings" },
+  {
+    label: "Settings",
+    icon: "⚙️",
+    color: "#7B3FBF",
+    route: "/settings/settings",
+  },
 ];
 
 const RECENT_ACTIVITY = [
