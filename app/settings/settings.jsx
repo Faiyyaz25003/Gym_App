@@ -272,7 +272,12 @@ export default function Settings() {
       {/* 🚪 Account Actions */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Account Actions</Text>
-        <SettingItem icon="log-out-outline" title="Logout" danger />
+        <SettingItem
+          icon="log-out-outline"
+          title="Logout"
+          danger
+          onPress={() => router.replace("/login")}
+        />
         <SettingItem icon="trash-outline" title="Delete Account" danger />
       </View>
     </ScrollView>
