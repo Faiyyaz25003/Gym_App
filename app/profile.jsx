@@ -112,6 +112,7 @@ export default function ProfileScreen() {
                 // navigation.navigate('ChangePassword')
 
                 router.push("/changePassword");
+
               }}
             >
               <View
