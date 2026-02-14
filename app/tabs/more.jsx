@@ -3,9 +3,9 @@ import { useRouter } from "expo-router";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const options = [
-  { title: "Diet", icon: "nutrition", route: "/diet" },
-  { title: "Exercise", icon: "fitness", route: "/exercise" },
-  { title: "Profile", icon: "person", route: "/profile" },
+  { title: "Diet", icon: "nutrition", route: "/diet/diet" },
+  { title: "Exercise", icon: "fitness", route: "/exercise/exercise" },
+  { title: "Profile", icon: "person", route: "/profile/profile" },
   { title: "Settings", icon: "settings", route: "/settings/settings" },
 ];
 

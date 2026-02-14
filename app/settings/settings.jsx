@@ -190,12 +190,12 @@ export default function Settings() {
         <SettingItem
           icon="person-outline"
           title="Profile"
-          onPress={() => router.push("/profile")}
+          onPress={() => router.push("/profile/profile")}
         />
         <SettingItem
           icon="lock-closed-outline"
           title="Change Password"
-          onPress={() => router.push("/changePassword")}
+          onPress={() => router.push("/changePassword/changePassword")}
         />
       </View>
 
@@ -225,7 +225,7 @@ export default function Settings() {
         <SettingItem
           icon="nutrition-outline"
           title="Diet Settings"
-          onPress={() => router.push("/diet")}
+          onPress={() => router.push("/diet/diet")}
         />
         <SettingItem
           icon="barbell-outline"

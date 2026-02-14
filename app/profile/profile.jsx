@@ -116,7 +116,7 @@ export default function ProfileScreen() {
                 setMenuOpen(false);
                 // navigation.navigate('ChangePassword')
 
-                router.push("/changePassword");
+                router.push("/changePassword/changePassword");
 
               }}
             >
