@@ -5,6 +5,21 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 const options = [
   { title: "Diet", icon: "nutrition", route: "/diet/diet" },
   { title: "Exercise", icon: "fitness", route: "/exercise/exercise" },
+
+  { title: "User Details", icon: "person-circle", route: "/user/userDetails" },
+  {
+    title: "Messages",
+    icon: "chatbubble-ellipses",
+    route: "/user/userMessages",
+  },
+
+  {
+    title: "Membership Expired",
+    icon: "alert-circle",
+    route: "/membership/expired",
+  },
+  { title: "Plans", icon: "pricetags", route: "/plans/plans" },
+
   { title: "Profile", icon: "person", route: "/profile/profile" },
   { title: "Settings", icon: "settings", route: "/settings/settings" },
 ];
@@ -21,6 +36,7 @@ export default function More() {
           key={index}
           style={styles.card}
           onPress={() => router.push(item.route)}
+          activeOpacity={0.8}
         >
           <Ionicons name={item.icon} size={22} color="#ff4757" />
           <Text style={styles.text}>{item.title}</Text>
