@@ -227,12 +227,12 @@ export default function Login() {
       email === admin.email &&
       password === admin.password
     ) {
-      router.replace("/tabs");
+      router.replace("/adminTabs");
       return;
     }
 
     if (role === "user" && email === user.email && password === user.password) {
-      router.replace("/tabs");
+      router.replace("/userTabs");
       return;
     }
 
