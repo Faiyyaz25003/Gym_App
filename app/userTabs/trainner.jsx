@@ -1,38 +1,78 @@
-import { useRouter } from "expo-router";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { useState } from "react";
+import { View, Text, StyleSheet, TextInput, FlatList } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-export default function Trainer() {
-  const router = useRouter();
+const trainersData = [
+  {
+    id: "1",
+    name: "Rahul Sharma",
+    role: "Cardio Trainer",
+    experience: "5 Years",
+  },
+  {
+    id: "2",
+    name: "Neha Verma",
+    role: "Yoga Trainer",
+    experience: "3 Years",
+  },
+  {
+    id: "3",
+    name: "Aman Khan",
+    role: "Weight Trainer",
+    experience: "6 Years",
+  },
+  {
+    id: "4",
+    name: "Priya Singh",
+    role: "Zumba Trainer",
+    experience: "4 Years",
+  },
+];
+
+export default function Trainers() {
+  const [search, setSearch] = useState("");
+
+  const filteredData = trainersData.filter((item) =>
+    item.name.toLowerCase().includes(search.toLowerCase()),
+  );
+
+  const renderItem = ({ item }) => (
+    <View style={styles.card}>
+      <View style={styles.avatar}>
+        <Ionicons name="person" size={32} color="#2563eb" />
+      </View>
+
+      <Text style={styles.name}>{item.name}</Text>
+      <Text style={styles.role}>{item.role}</Text>
+      <Text style={styles.exp}>{item.experience}</Text>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>🏋️ Gym Admin Panel</Text>
-      <Text style={styles.subHeading}>Manage trainers easily</Text>
+      {/* Header */}
+      <Text style={styles.title}>👥 View Trainers</Text>
 
-      {/* Add Trainer */}
-      <TouchableOpacity
-        style={styles.card}
-        onPress={() => router.push("/trainer/AddTrainner")}
-      >
-        <Ionicons name="person-add" size={26} color="#2563eb" />
-        <View style={styles.textBox}>
-          <Text style={styles.cardTitle}>Add Trainers</Text>
-          <Text style={styles.cardSub}>Register new gym trainer</Text>
-        </View>
-      </TouchableOpacity>
+      {/* Search */}
+      <View style={styles.searchBox}>
+        <Ionicons name="search" size={18} color="#6b7280" />
+        <TextInput
+          placeholder="Search trainer..."
+          style={styles.input}
+          value={search}
+          onChangeText={setSearch}
+        />
+      </View>
 
-      {/* View Trainer */}
-      <TouchableOpacity
-        style={styles.card}
-        onPress={() => router.push("/trainer/ViewTrainner")}
-      >
-        <Ionicons name="people" size={26} color="#16a34a" />
-        <View style={styles.textBox}>
-          <Text style={styles.cardTitle}>View Trainers</Text>
-          <Text style={styles.cardSub}>All registered trainers</Text>
-        </View>
-      </TouchableOpacity>
+      {/* Trainers Grid */}
+      <FlatList
+        data={filteredData}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+        numColumns={2}
+        columnWrapperStyle={{ justifyContent: "space-between" }}
+        showsVerticalScrollIndicator={false}
+      />
     </View>
   );
 }
@@ -40,36 +80,56 @@ export default function Trainer() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     backgroundColor: "#f9fafb",
+    padding: 16,
   },
-  heading: {
+  title: {
     fontSize: 22,
     fontWeight: "bold",
-    marginBottom: 4,
+    marginBottom: 12,
   },
-  subHeading: {
-    color: "#6b7280",
-    marginBottom: 20,
-  },
-  card: {
+  searchBox: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#fff",
-    padding: 16,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    height: 45,
+    marginBottom: 16,
+  },
+  input: {
+    marginLeft: 8,
+    flex: 1,
+  },
+  card: {
+    backgroundColor: "#fff",
+    width: "48%",
     borderRadius: 14,
-    marginBottom: 15,
-    elevation: 3,
+    padding: 16,
+    marginBottom: 16,
+    alignItems: "center",
   },
-  textBox: {
-    marginLeft: 15,
+  avatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: "#e0e7ff",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 10,
   },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: "600",
+  name: {
+    fontSize: 15,
+    fontWeight: "bold",
   },
-  cardSub: {
-    color: "#6b7280",
+  role: {
     fontSize: 13,
+    color: "#6b7280",
+    marginTop: 2,
+  },
+  exp: {
+    fontSize: 12,
+    color: "#9ca3af",
+    marginTop: 2,
   },
 });
