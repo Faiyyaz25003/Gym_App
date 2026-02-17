@@ -11,7 +11,7 @@ export default function ScheduleScreen() {
       {/* Create Schedule Card */}
       <TouchableOpacity
         style={[styles.card, styles.createCard]}
-        onPress={() => router.push("/schedule/createSchedule")}
+        onPress={() => router.push("/adminFrontend/schedule/createSchedule")}
       >
         <Text style={styles.cardTitle}>➕ Create Schedule</Text>
         <Text style={styles.cardDesc}>Add new workout / diet schedule</Text>
@@ -20,7 +20,7 @@ export default function ScheduleScreen() {
       {/* View Schedule Card */}
       <TouchableOpacity
         style={[styles.card, styles.viewCard]}
-        onPress={() => router.push("/schedule/viewSchedule")}
+        onPress={() => router.push("/adminFrontend/schedule/viewSchedule")}
       >
         <Text style={styles.cardTitle}>📖 View Schedule</Text>
         <Text style={styles.cardDesc}>See your saved schedules</Text>

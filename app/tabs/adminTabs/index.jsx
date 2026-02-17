@@ -23,7 +23,7 @@ export default function Home() {
       {/* Dashboard */}
       <TouchableOpacity
         style={styles.card}
-        onPress={() => router.push("/home/dashboard")}
+        onPress={() => router.push("/adminFrontend/home/dashboard")}
       >
         <View style={styles.row}>
           <Ionicons name="speedometer" size={26} color="#ff4757" />
@@ -37,7 +37,7 @@ export default function Home() {
       {/* Achievements */}
       <TouchableOpacity
         style={styles.card}
-        onPress={() => router.push("/home/achievements")}
+        onPress={() => router.push("/adminFrontend/home/achievements")}
       >
         <View style={styles.row}>
           <Ionicons name="trophy" size={26} color="#ff9f43" />
@@ -51,7 +51,7 @@ export default function Home() {
       {/* Exercise */}
       <TouchableOpacity
         style={styles.card}
-        onPress={() => router.push("/home/exercise")}
+        onPress={() => router.push("/adminFrontend/home/exercise")}
       >
         <View style={styles.row}>
           <Ionicons name="barbell" size={26} color="#1e90ff" />
@@ -65,7 +65,7 @@ export default function Home() {
       {/* Schedule */}
       <TouchableOpacity
         style={styles.card}
-        onPress={() => router.push("/home/schedule")}
+        onPress={() => router.push("/adminFrontend/home/schedule")}
       >
         <View style={styles.row}>
           <Ionicons name="calendar" size={26} color="#2ed573" />

@@ -13,7 +13,7 @@ export default function Trainer() {
       {/* Add Trainer */}
       <TouchableOpacity
         style={styles.card}
-        onPress={() => router.push("/trainer/AddTrainner")}
+        onPress={() => router.push("/adminFrontend/trainer/AddTrainner")}
       >
         <Ionicons name="person-add" size={26} color="#2563eb" />
         <View style={styles.textBox}>
@@ -25,7 +25,7 @@ export default function Trainer() {
       {/* View Trainer */}
       <TouchableOpacity
         style={styles.card}
-        onPress={() => router.push("/trainer/ViewTrainner")}
+        onPress={() => router.push("/adminFrontend/trainer/ViewTrainner")}
       >
         <Ionicons name="people" size={26} color="#16a34a" />
         <View style={styles.textBox}>

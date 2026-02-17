@@ -11,7 +11,7 @@ export default function Diet() {
       {/* Create Diet */}
       <TouchableOpacity
         style={styles.card}
-        onPress={() => router.push("/diet/createDiet")}
+        onPress={() => router.push("/adminFrontend/diet/createDiet")}
       >
         <Text style={styles.cardTitle}>➕ Create Diet</Text>
         <Text style={styles.cardDesc}>
@@ -22,7 +22,7 @@ export default function Diet() {
       {/* View Diet */}
       <TouchableOpacity
         style={styles.card}
-        onPress={() => router.push("/diet/viewDiet")}
+        onPress={() => router.push("/adminFrontend/diet/viewDiet")}
       >
         <Text style={styles.cardTitle}>📋 View Diet</Text>
         <Text style={styles.cardDesc}>View all created diet plans</Text>
@@ -31,7 +31,7 @@ export default function Diet() {
       {/* Create Diet Reference */}
       <TouchableOpacity
         style={styles.card}
-        onPress={() => router.push("/diet/createDietReference")}
+        onPress={() => router.push("/adminFrontend/diet/createDietReference")}
       >
         <Text style={styles.cardTitle}>🎥 Create Diet Reference</Text>
         <Text style={styles.cardDesc}>
@@ -42,7 +42,7 @@ export default function Diet() {
       {/* View Diet Reference */}
       <TouchableOpacity
         style={styles.card}
-        onPress={() => router.push("/diet/viewDietReference")}
+        onPress={() => router.push("/adminFrontend/diet/viewDietReference")}
       >
         <Text style={styles.cardTitle}>📚 View Diet Reference</Text>
         <Text style={styles.cardDesc}>

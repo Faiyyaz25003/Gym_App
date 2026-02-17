@@ -22,7 +22,7 @@ export default function Home() {
       {/* ➕ Add Member */}
       <TouchableOpacity
         style={styles.card}
-        onPress={() => router.push("settings/register")}
+        onPress={() => router.push("/adminFrontend/settings/register")}
       >
         <View style={styles.row}>
           <Ionicons name="person-add" size={26} color="#1e90ff" />
@@ -36,7 +36,7 @@ export default function Home() {
       {/* 👥 View Members */}
       <TouchableOpacity
         style={styles.card}
-        onPress={() => router.push("/member/ViewMembers")}
+        onPress={() => router.push("/adminFrontend/member/ViewMembers")}
       >
         <View style={styles.row}>
           <Ionicons name="people" size={26} color="#2ed573" />

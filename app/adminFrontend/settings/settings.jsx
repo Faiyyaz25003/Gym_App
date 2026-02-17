@@ -190,12 +190,14 @@ export default function Settings() {
         <SettingItem
           icon="person-outline"
           title="Profile"
-          onPress={() => router.push("/profile/profile")}
+          onPress={() => router.push("/adminFrontend/profile/profile")}
         />
         <SettingItem
           icon="lock-closed-outline"
           title="Change Password"
-          onPress={() => router.push("/changePassword/changePassword")}
+          onPress={() =>
+            router.push("/adminFrontend/changePassword/changePassword")
+          }
         />
       </View>
 
@@ -213,7 +215,7 @@ export default function Settings() {
         <SettingItem
           icon="moon-outline"
           title="Dark Mode"
-          onPress={() => router.push("/settings/darkmode")}
+          onPress={() => router.push("/adminFrontend/settings/darkmode")}
         />
         <SettingItem icon="language-outline" title="Language" />
         <SettingItem icon="options-outline" title="Units & Display" />
@@ -225,12 +227,12 @@ export default function Settings() {
         <SettingItem
           icon="nutrition-outline"
           title="Diet Settings"
-          onPress={() => router.push("/diet/diet")}
+          onPress={() => router.push("/adminFrontend/diet/diet")}
         />
         <SettingItem
           icon="barbell-outline"
           title="Exercise Preferences"
-          onPress={() => router.push("/home/exercise")}
+          onPress={() => router.push("/adminFrontend/home/exercise")}
         />
       </View>
 
@@ -240,12 +242,12 @@ export default function Settings() {
         <SettingItem
           icon="person-add-outline"
           title="Register a Member"
-          onPress={() => router.push("/settings/register")}
+          onPress={() => router.push("/adminFrontend/settings/register")}
         />
         <SettingItem
           icon="people-outline"
           title="View Members"
-          onPress={() => router.push("/settings/register")}
+          onPress={() => router.push("/adminFrontend/settings/register")}
         />
       </View>
 
@@ -255,17 +257,17 @@ export default function Settings() {
         <SettingItem
           icon="information-circle-outline"
           title="About App"
-          onPress={() => router.push("/settings/about")}
+          onPress={() => router.push("/adminFrontend/settings/about")}
         />
         <SettingItem
           icon="help-circle-outline"
           title="Help & FAQ"
-          onPress={() => router.push("/settings/help")}
+          onPress={() => router.push("/adminFrontend/settings/help")}
         />
         <SettingItem
           icon="document-text-outline"
           title="Privacy Policy"
-          onPress={() => router.push("/settings/privacy")}
+          onPress={() => router.push("/adminFrontend/settings/privacy")}
         />
       </View>
 
