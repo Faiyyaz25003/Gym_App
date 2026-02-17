@@ -65,7 +65,6 @@ export default function Settings() {
           onPress={() => router.push("/userFrontend/settings/darkmode")}
         />
         <SettingItem icon="language-outline" title="Language" />
-        <SettingItem icon="options-outline" title="Units & Display" />
       </View>
 
       {/* 🏋️ Fitness */}
@@ -80,21 +79,6 @@ export default function Settings() {
           icon="barbell-outline"
           title="Exercise Preferences"
           onPress={() => router.push("/userFrontend/home/exercise")}
-        />
-      </View>
-
-      {/* 👥 Member Management */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Member Management</Text>
-        <SettingItem
-          icon="person-add-outline"
-          title="Register a Member"
-          onPress={() => router.push("/userFrontend/settings/register")}
-        />
-        <SettingItem
-          icon="people-outline"
-          title="View Members"
-          onPress={() => router.push("/userFrontend/settings/register")}
         />
       </View>
 

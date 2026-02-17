@@ -65,7 +65,6 @@ export default function Settings() {
           onPress={() => router.push("/OuterUserFrontend/settings/darkmode")}
         />
         <SettingItem icon="language-outline" title="Language" />
-        <SettingItem icon="options-outline" title="Units & Display" />
       </View>
 
       {/* 🏋️ Fitness */}

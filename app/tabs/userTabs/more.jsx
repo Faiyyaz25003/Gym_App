@@ -9,23 +9,6 @@ const options = [
     icon: "fitness",
     route: "/userFrontend/exercise/exercise",
   },
-
-  {
-    title: "User Details",
-    icon: "person-circle",
-    route: "/userFrontend/user/userDetails",
-  },
-  {
-    title: "Messages",
-    icon: "chatbubble-ellipses",
-    route: "/userFrontend/user/userMessages",
-  },
-
-  {
-    title: "Membership Expired",
-    icon: "alert-circle",
-    route: "/userFrontend/membership/expired",
-  },
   { title: "Plans", icon: "pricetags", route: "/userFrontend/plans/plans" },
 
   { title: "Profile", icon: "person", route: "/userFrontend/profile/profile" },
