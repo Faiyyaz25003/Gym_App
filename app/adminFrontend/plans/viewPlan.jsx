@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-export default function Plan() {
+export default function ViewPlan() {
   const [plans, setPlans] = useState([
     {
       id: 1,
