@@ -9,18 +9,32 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  ScrollView,
 } from "react-native";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("admin"); // admin | user | outer
+  const [role, setRole] = useState("admin");
+  // superAdmin | admin | user | outer
 
   const handleLogin = () => {
+    const superAdmin = { email: "super@gym.com", password: "999999" };
     const admin = { email: "admin@gym.com", password: "123456" };
     const user = { email: "user@gym.com", password: "123456" };
     const outer = { email: "outer@gym.com", password: "123456" };
 
+    // ✅ SUPER ADMIN
+    if (
+      role === "superAdmin" &&
+      email === superAdmin.email &&
+      password === superAdmin.password
+    ) {
+      router.replace("/tabs/superAdminTabs");
+      return;
+    }
+
+    // ✅ ADMIN
     if (
       role === "admin" &&
       email === admin.email &&
@@ -30,11 +44,13 @@ export default function Login() {
       return;
     }
 
+    // ✅ USER
     if (role === "user" && email === user.email && password === user.password) {
       router.replace("/tabs/userTabs");
       return;
     }
 
+    // ✅ OUTER USER
     if (
       role === "outer" &&
       email === outer.email &&
@@ -48,7 +64,7 @@ export default function Login() {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Image
@@ -65,6 +81,14 @@ export default function Login() {
       <View style={styles.card}>
         {/* Role Selector */}
         <View style={styles.roleBox}>
+          <TouchableOpacity
+            style={[styles.roleBtn, role === "superAdmin" && styles.roleActive]}
+            onPress={() => setRole("superAdmin")}
+          >
+            <Ionicons name="key" size={18} color="#fff" />
+            <Text style={styles.roleText}>Super</Text>
+          </TouchableOpacity>
+
           <TouchableOpacity
             style={[styles.roleBtn, role === "admin" && styles.roleActive]}
             onPress={() => setRole("admin")}
@@ -115,7 +139,7 @@ export default function Login() {
           />
         </View>
 
-        {/* Forgot */}
+        {/* Forgot Password */}
         <TouchableOpacity
           style={styles.forgot}
           onPress={() => router.push("/auth/forgot-password")}
@@ -128,8 +152,8 @@ export default function Login() {
           <Text style={styles.loginText}>LOGIN AS {role.toUpperCase()}</Text>
         </TouchableOpacity>
 
-        {/* Register */}
-        {role !== "admin" && (
+        {/* Register (Not for Admin & Super Admin) */}
+        {role !== "admin" && role !== "superAdmin" && (
           <View style={styles.registerBox}>
             <Text style={styles.registerLabel}>New here?</Text>
             <TouchableOpacity onPress={() => router.push("/auth/register")}>
@@ -138,14 +162,14 @@ export default function Login() {
           </View>
         )}
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
 /* 🎨 STYLES */
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: "#0f172a",
     justifyContent: "center",
     paddingHorizontal: 24,
@@ -184,12 +208,13 @@ const styles = StyleSheet.create({
 
   roleBox: {
     flexDirection: "row",
+    flexWrap: "wrap",
     justifyContent: "space-between",
     marginBottom: 22,
   },
 
   roleBtn: {
-    flex: 1,
+    width: "48%",
     flexDirection: "row",
     gap: 8,
     justifyContent: "center",
@@ -197,7 +222,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 12,
     backgroundColor: "#334155",
-    marginHorizontal: 5,
+    marginBottom: 10,
   },
 
   roleActive: {
