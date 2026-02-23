@@ -4,6 +4,7 @@ import { Picker } from "@react-native-picker/picker";
 import * as ImagePicker from "expo-image-picker";
 import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Image,
   KeyboardAvoidingView,
@@ -32,10 +33,12 @@ export default function Register() {
 
   const [showCalendar, setShowCalendar] = useState(false);
   const [profilePhoto, setProfilePhoto] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  /* ============================= */
-  /* ✅ AUTO CALCULATE END DATE */
-  /* ============================= */
+  ////////////////////////////////////////////////////////
+  // ✅ AUTO CALCULATE END DATE
+  ////////////////////////////////////////////////////////
+
   useEffect(() => {
     if (!startDate) return;
 
@@ -54,9 +57,10 @@ export default function Register() {
     setEndDate(newEndDate);
   }, [startDate, subscriptionMonths, customMonths]);
 
-  /* ============================= */
-  /* 📷 IMAGE PICKER */
-  /* ============================= */
+  ////////////////////////////////////////////////////////
+  // 📷 IMAGE PICKER
+  ////////////////////////////////////////////////////////
+
   const pickImage = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
@@ -69,17 +73,19 @@ export default function Register() {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 1,
+      quality: 0.7,
+      base64: true,
     });
 
     if (!result.canceled) {
-      setProfilePhoto(result.assets[0].uri);
+      setProfilePhoto(result.assets[0].base64);
     }
   };
 
-  /* ============================= */
-  /* 📅 DATE HANDLING */
-  /* ============================= */
+  ////////////////////////////////////////////////////////
+  // 📅 DATE HANDLING
+  ////////////////////////////////////////////////////////
+
   const handleDateChange = (event, selectedDate) => {
     if (Platform.OS !== "web") {
       setShowCalendar(false);
@@ -94,10 +100,11 @@ export default function Register() {
     setStartDate(selected);
   };
 
-  /* ============================= */
-  /* 📝 REGISTER */
-  /* ============================= */
-  const handleRegister = () => {
+  ////////////////////////////////////////////////////////
+  // 📝 REGISTER API CALL
+  ////////////////////////////////////////////////////////
+
+  const handleRegister = async () => {
     if (
       !fullName ||
       !email ||
@@ -113,11 +120,63 @@ export default function Register() {
       return;
     }
 
-    Alert.alert(
-      "Success",
-      `Subscription from ${startDate.toDateString()} to ${endDate.toDateString()}`,
-    );
+    try {
+      setLoading(true);
+
+      const response = await fetch(
+        // "http://192.168.1.5:5000/api/admin/register"
+        "http://localhost:5000/api/admin/register", // ⚠ CHANGE THIS
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            fullName,
+            email,
+            mobile,
+            gymName,
+            gymAddress,
+            gender,
+            subscriptionMonths:
+              subscriptionMonths === "custom"
+                ? customMonths
+                : subscriptionMonths,
+            startDate,
+            endDate,
+            profilePhoto,
+          }),
+        },
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        Alert.alert("Success", data.message);
+
+        // Reset form
+        setFullName("");
+        setEmail("");
+        setMobile("");
+        setGymName("");
+        setGymAddress("");
+        setGender("");
+        setSubscriptionMonths("");
+        setCustomMonths("");
+        setStartDate(null);
+        setEndDate(null);
+        setProfilePhoto(null);
+      } else {
+        Alert.alert("Error", data.message);
+      }
+    } catch (error) {
+      Alert.alert("Error", "Server not reachable");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  ////////////////////////////////////////////////////////
 
   return (
     <KeyboardAvoidingView
@@ -134,7 +193,10 @@ export default function Register() {
         {/* Profile Photo */}
         <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
           {profilePhoto ? (
-            <Image source={{ uri: profilePhoto }} style={styles.profileImage} />
+            <Image
+              source={{ uri: `data:image/jpeg;base64,${profilePhoto}` }}
+              style={styles.profileImage}
+            />
           ) : (
             <Ionicons name="camera" size={40} color="#555" />
           )}
@@ -213,15 +275,7 @@ export default function Register() {
 
         {/* Date Picker */}
         {Platform.OS === "web" ? (
-          <input
-            type="date"
-            onChange={handleWebDateChange}
-            style={{
-              padding: 12,
-              borderRadius: 10,
-              marginBottom: 15,
-            }}
-          />
+          <input type="date" onChange={handleWebDateChange} />
         ) : (
           <>
             <TouchableOpacity
@@ -244,7 +298,6 @@ export default function Register() {
           </>
         )}
 
-        {/* End Date */}
         {endDate && (
           <View style={styles.dateBox}>
             <Text style={styles.dateText}>
@@ -254,16 +307,16 @@ export default function Register() {
         )}
 
         <TouchableOpacity style={styles.button} onPress={handleRegister}>
-          <Text style={styles.buttonText}>Register</Text>
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>Register</Text>
+          )}
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
-
-/* ============================= */
-/* 🎨 STYLES */
-/* ============================= */
 
 const styles = StyleSheet.create({
   container: {
