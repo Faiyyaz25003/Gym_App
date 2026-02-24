@@ -1,55 +1,47 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  Modal,
+  ActivityIndicator,
   Alert,
   ScrollView,
-  ActivityIndicator,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
-/* ============================= */
-/* 🔥 BASE URL (ANDROID DEVICE IP) */
-/* ============================= */
+import { BarChart, PieChart } from "react-native-chart-kit";
 
 const BASE_URL = "http://localhost:5000";
-// ⚠️ Apna laptop ka local IP daalo
 
 export default function GymAdminPanel() {
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
+
   const [gyms, setGyms] = useState([]);
-  const [selectedGym, setSelectedGym] = useState(null);
-  const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
 
   //////////////////////////////////////////////////////////
-  // ✅ FETCH ALL ADMINS
+  // FETCH ADMINS
   //////////////////////////////////////////////////////////
 
   const fetchAdmins = async () => {
     try {
       setLoading(true);
-
       const token = await AsyncStorage.getItem("token");
 
       const response = await fetch(`${BASE_URL}/api/admin/all`, {
-        method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
         },
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Failed to fetch admins");
+        throw new Error(data.message);
       }
 
-      setGyms(data.admins);
+      setGyms(data.admins || []);
     } catch (error) {
       Alert.alert("Error", error.message);
     } finally {
@@ -62,181 +54,211 @@ export default function GymAdminPanel() {
   }, []);
 
   //////////////////////////////////////////////////////////
-  // ✅ DELETE ADMIN
+  // DASHBOARD DATA
   //////////////////////////////////////////////////////////
 
-  const deleteGym = async (id) => {
-    Alert.alert("Confirm", "Delete this admin?", [
-      { text: "Cancel" },
+  const totalAdmins = gyms.length;
+  const activeAdmins = gyms.filter((a) => !a.isBlocked).length;
+  const blockedAdmins = gyms.filter((a) => a.isBlocked).length;
+  const totalRevenue = 150000;
+
+  //////////////////////////////////////////////////////////
+  // PIE DATA
+  //////////////////////////////////////////////////////////
+
+  const pieData = [
+    {
+      name: "Active",
+      population: activeAdmins,
+      color: "#4CAF50",
+      legendFontColor: "#333",
+      legendFontSize: 14,
+    },
+    {
+      name: "Blocked",
+      population: blockedAdmins,
+      color: "#F44336",
+      legendFontColor: "#333",
+      legendFontSize: 14,
+    },
+  ];
+
+  //////////////////////////////////////////////////////////
+  // BAR DATA
+  //////////////////////////////////////////////////////////
+
+  const barData = {
+    labels: ["Total", "Active", "Blocked"],
+    datasets: [
       {
-        text: "Delete",
-        onPress: async () => {
-          try {
-            const token = await AsyncStorage.getItem("token");
-
-            const response = await fetch(`${BASE_URL}/api/admin/${id}`, {
-              method: "DELETE",
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-              throw new Error(data.message);
-            }
-
-            fetchAdmins(); // refresh list
-          } catch (error) {
-            Alert.alert("Error", error.message);
-          }
-        },
+        data: [totalAdmins, activeAdmins, blockedAdmins],
       },
-    ]);
+    ],
   };
 
-  //////////////////////////////////////////////////////////
-  // RENDER ROW
-  //////////////////////////////////////////////////////////
-
-  const renderItem = ({ item }) => (
-    <View style={styles.row}>
-      <Text style={styles.cell}>{item.gymName}</Text>
-      <Text style={styles.cell}>{item.fullName}</Text>
-      <Text style={styles.cell}>{item.email}</Text>
-      <Text style={styles.cell}>{item.mobile}</Text>
-      <Text style={styles.cell}>{item.gymAddress}</Text>
-      <Text style={[styles.cell, { color: "green" }]}>{item.role}</Text>
-
-      <View style={styles.actionRow}>
-        <TouchableOpacity
-          style={styles.viewBtn}
-          onPress={() => {
-            setSelectedGym(item);
-            setModalVisible(true);
-          }}
-        >
-          <Text style={styles.btnText}>View</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.deleteBtn}
-          onPress={() => deleteGym(item._id)}
-        >
-          <Text style={styles.btnText}>Delete</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+  const chartConfig = {
+    backgroundGradientFrom: "#ffffff",
+    backgroundGradientTo: "#ffffff",
+    decimalPlaces: 0,
+    color: (opacity = 1) => `rgba(0, 122, 255, ${opacity})`,
+    labelColor: () => "#333",
+    propsForBackgroundLines: {
+      stroke: "#e3e3e3",
+    },
+  };
 
   //////////////////////////////////////////////////////////
   // UI
   //////////////////////////////////////////////////////////
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>All Registered Admins</Text>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ paddingBottom: 40 }}
+      showsVerticalScrollIndicator={false}
+    >
+      <Text style={styles.title}>Admin Dashboard</Text>
 
       {loading ? (
-        <ActivityIndicator size="large" color="green" />
+        <ActivityIndicator size="large" color="#007AFF" />
       ) : (
-        <ScrollView horizontal>
-          <View>
-            <View style={styles.headerRow}>
-              <Text style={styles.headerText}>Gym</Text>
-              <Text style={styles.headerText}>Owner</Text>
-              <Text style={styles.headerText}>Email</Text>
-              <Text style={styles.headerText}>Mobile</Text>
-              <Text style={styles.headerText}>Address</Text>
-              <Text style={styles.headerText}>Role</Text>
-              <Text style={styles.headerText}>Actions</Text>
-            </View>
-
-            <FlatList
-              data={gyms}
-              keyExtractor={(item) => item._id}
-              renderItem={renderItem}
-              ListFooterComponent={<View style={{ height: 20 }} />}
+        <>
+          {/* DASHBOARD CARDS */}
+          <View
+            style={[
+              styles.dashboardContainer,
+              { flexDirection: isTablet ? "row" : "column" },
+            ]}
+          >
+            <DashboardCard
+              title="Total Admins"
+              value={totalAdmins}
+              isTablet={isTablet}
+            />
+            <DashboardCard
+              title="Active"
+              value={activeAdmins}
+              isTablet={isTablet}
+            />
+            <DashboardCard
+              title="Blocked"
+              value={blockedAdmins}
+              isTablet={isTablet}
+            />
+            <DashboardCard
+              title="Revenue"
+              value={`₹ ${totalRevenue}`}
+              isTablet={isTablet}
             />
           </View>
-        </ScrollView>
+
+          {/* PIE CHART */}
+          <Text style={styles.chartTitle}>Admin Status</Text>
+          <View style={styles.chartWrapper}>
+            <PieChart
+              data={pieData}
+              width={width - 32}
+              height={220}
+              chartConfig={chartConfig}
+              accessor="population"
+              backgroundColor="transparent"
+              paddingLeft="10"
+              absolute
+            />
+          </View>
+
+          {/* BAR CHART */}
+          <Text style={styles.chartTitle}>Admin Overview</Text>
+          <View style={styles.chartWrapper}>
+            <BarChart
+              data={barData}
+              width={width - 32}
+              height={260}
+              chartConfig={chartConfig}
+              fromZero
+              showValuesOnTopOfBars
+              style={{ borderRadius: 16 }}
+            />
+          </View>
+        </>
       )}
-
-      {/* MODAL */}
-      <Modal visible={modalVisible} animationType="slide">
-        <ScrollView style={styles.modalContainer}>
-          {selectedGym && (
-            <>
-              <Text style={styles.modalTitle}>
-                {selectedGym.gymName} Details
-              </Text>
-
-              <Text>Owner: {selectedGym.fullName}</Text>
-              <Text>Email: {selectedGym.email}</Text>
-              <Text>Mobile: {selectedGym.mobile}</Text>
-              <Text>Address: {selectedGym.gymAddress}</Text>
-              <Text>Subscription: {selectedGym.subscriptionMonths} Months</Text>
-
-              <TouchableOpacity
-                style={styles.closeBtn}
-                onPress={() => setModalVisible(false)}
-              >
-                <Text style={styles.btnText}>Close</Text>
-              </TouchableOpacity>
-            </>
-          )}
-        </ScrollView>
-      </Modal>
-    </View>
+    </ScrollView>
   );
 }
 
 //////////////////////////////////////////////////////////
-// 🎨 STYLES
+// CARD COMPONENT
+//////////////////////////////////////////////////////////
+
+const DashboardCard = ({ title, value, isTablet }) => (
+  <View
+    style={[
+      styles.card,
+      {
+        width: isTablet ? "48%" : "100%",
+      },
+    ]}
+  >
+    <Text style={styles.cardTitle}>{title}</Text>
+    <Text style={styles.cardValue}>{value}</Text>
+  </View>
+);
+
+//////////////////////////////////////////////////////////
+// STYLES
 //////////////////////////////////////////////////////////
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 10, backgroundColor: "#f4f4f4" },
-  title: { fontSize: 20, fontWeight: "bold", marginBottom: 10 },
-
-  headerRow: {
-    flexDirection: "row",
-    backgroundColor: "#ddd",
-    padding: 10,
-    width: 1100,
+  container: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 20,
+    backgroundColor: "#f4f6f9",
   },
-  headerText: { width: 150, fontWeight: "bold" },
 
-  row: {
-    flexDirection: "row",
-    padding: 10,
-    borderBottomWidth: 1,
-    borderColor: "#ccc",
-    alignItems: "center",
-    width: 1100,
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 20,
   },
-  cell: { width: 150, fontSize: 12 },
 
-  actionRow: {
-    flexDirection: "row",
-    width: 200,
+  dashboardContainer: {
+    flexWrap: "wrap",
     justifyContent: "space-between",
   },
 
-  viewBtn: { backgroundColor: "#3498db", padding: 5, borderRadius: 4 },
-  deleteBtn: { backgroundColor: "red", padding: 5, borderRadius: 4 },
+  card: {
+    backgroundColor: "#ffffff",
+    padding: 20,
+    borderRadius: 16,
+    marginBottom: 16,
+    elevation: 4,
+  },
 
-  btnText: { color: "#fff", fontSize: 11 },
+  cardTitle: {
+    fontSize: 14,
+    color: "#666",
+  },
 
-  modalContainer: { padding: 20 },
-  modalTitle: { fontSize: 20, fontWeight: "bold", marginBottom: 10 },
+  cardValue: {
+    fontSize: 26,
+    fontWeight: "bold",
+    marginTop: 6,
+  },
 
-  closeBtn: {
-    backgroundColor: "#2ecc71",
-    padding: 10,
-    borderRadius: 6,
-    marginTop: 20,
+  chartTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginTop: 25,
+    marginBottom: 10,
+  },
+
+  chartWrapper: {
     alignItems: "center",
+    backgroundColor: "#fff",
+    paddingVertical: 15,
+    borderRadius: 16,
+    elevation: 4,
+    marginBottom: 70, // 👈 Bar graph ke niche spacing added
   },
 });

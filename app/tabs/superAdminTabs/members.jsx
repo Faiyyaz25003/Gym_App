@@ -5,7 +5,6 @@ import {
   Alert,
   FlatList,
   Modal,
-  Platform,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -14,22 +13,17 @@ import {
   View,
 } from "react-native";
 
-//////////////////////////////////////////////////
-// 🔥 SAME API CONFIG LIKE LOGIN
-//////////////////////////////////////////////////
-
-const BASE_URL =
-  Platform.OS === "web" ? "http://localhost:5000" : "http://192.168.0.104:5000"; // 👈 your WiFi IP
+const BASE_URL = "http://localhost:5000"; // 🔥 CHANGE TO YOUR PC IP
 
 export default function GymAdminPanel() {
-  const [gyms, setGyms] = useState([]);
-  const [selectedGym, setSelectedGym] = useState(null);
+  const [admins, setAdmins] = useState([]);
+  const [selectedAdmin, setSelectedAdmin] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   //////////////////////////////////////////////////////////
-  // ✅ FETCH ALL ADMINS (INTEGRATED WITH YOUR CONTROLLER)
+  // FETCH ADMINS
   //////////////////////////////////////////////////////////
 
   const fetchAdmins = async () => {
@@ -38,36 +32,23 @@ export default function GymAdminPanel() {
 
       const token = await AsyncStorage.getItem("token");
 
-      if (!token) {
-        Alert.alert("Error", "Token not found. Please login again.");
-        return;
-      }
-
       const response = await fetch(`${BASE_URL}/api/admin/all`, {
-        method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
         },
       });
 
       const data = await response.json();
 
-      console.log("STATUS:", response.status);
-      console.log("RESPONSE:", data);
-
       if (!response.ok) {
-        throw new Error(data.message || "Failed to fetch admins");
+        throw new Error(data.message);
       }
 
-      // 👇 YOUR CONTROLLER RETURNS { success, total, admins }
-      setGyms(data.admins || []);
+      setAdmins(data.admins);
     } catch (error) {
-      console.log("Fetch Error:", error);
       Alert.alert("Error", error.message);
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
   };
 
@@ -76,19 +57,10 @@ export default function GymAdminPanel() {
   }, []);
 
   //////////////////////////////////////////////////////////
-  // 🔄 REFRESH
+  // DELETE ADMIN
   //////////////////////////////////////////////////////////
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    fetchAdmins();
-  };
-
-  //////////////////////////////////////////////////////////
-  // ❌ DELETE ADMIN
-  //////////////////////////////////////////////////////////
-
-  const deleteGym = (id) => {
+  const deleteAdmin = async (id) => {
     Alert.alert("Confirm", "Delete this admin?", [
       { text: "Cancel" },
       {
@@ -110,7 +82,7 @@ export default function GymAdminPanel() {
               throw new Error(data.message);
             }
 
-            Alert.alert("Success", "Admin Deleted Successfully");
+            Alert.alert("Success", "Admin deleted");
             fetchAdmins();
           } catch (error) {
             Alert.alert("Error", error.message);
@@ -121,7 +93,56 @@ export default function GymAdminPanel() {
   };
 
   //////////////////////////////////////////////////////////
-  // 🎨 RENDER ITEM
+  // BLOCK / UNBLOCK
+  //////////////////////////////////////////////////////////
+
+  const toggleBlock = async (id, currentStatus) => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+
+      const response = await fetch(`${BASE_URL}/api/admin/block/${id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          isBlocked: !currentStatus,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message);
+      }
+
+      Alert.alert("Success", data.message);
+      fetchAdmins();
+    } catch (error) {
+      Alert.alert("Error", error.message);
+    }
+  };
+
+  //////////////////////////////////////////////////////////
+  // FORMAT DATE
+  //////////////////////////////////////////////////////////
+
+  const formatDate = (date) => {
+    if (!date) return "-";
+    return new Date(date).toLocaleDateString();
+  };
+
+  //////////////////////////////////////////////////////////
+  // DASHBOARD COUNTS
+  //////////////////////////////////////////////////////////
+
+  const total = admins.length;
+  const active = admins.filter((a) => !a.isBlocked).length;
+  const blocked = admins.filter((a) => a.isBlocked).length;
+
+  //////////////////////////////////////////////////////////
+  // RENDER ROW
   //////////////////////////////////////////////////////////
 
   const renderItem = ({ item }) => (
@@ -129,15 +150,17 @@ export default function GymAdminPanel() {
       <Text style={styles.cell}>{item.gymName}</Text>
       <Text style={styles.cell}>{item.fullName}</Text>
       <Text style={styles.cell}>{item.email}</Text>
-      <Text style={styles.cell}>{item.mobile}</Text>
-      <Text style={styles.cell}>{item.gymAddress}</Text>
-      <Text style={[styles.cell, { color: "green" }]}>{item.role}</Text>
+      <Text style={styles.cell}>{formatDate(item.endDate)}</Text>
 
-      <View style={styles.actionRow}>
+      <Text style={[styles.cell, { color: item.isBlocked ? "red" : "green" }]}>
+        {item.isBlocked ? "Blocked" : "Active"}
+      </Text>
+
+      <View style={styles.actions}>
         <TouchableOpacity
           style={styles.viewBtn}
           onPress={() => {
-            setSelectedGym(item);
+            setSelectedAdmin(item);
             setModalVisible(true);
           }}
         >
@@ -145,8 +168,22 @@ export default function GymAdminPanel() {
         </TouchableOpacity>
 
         <TouchableOpacity
+          style={[
+            styles.blockBtn,
+            {
+              backgroundColor: item.isBlocked ? "green" : "orange",
+            },
+          ]}
+          onPress={() => toggleBlock(item._id, item.isBlocked)}
+        >
+          <Text style={styles.btnText}>
+            {item.isBlocked ? "Unblock" : "Block"}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           style={styles.deleteBtn}
-          onPress={() => deleteGym(item._id)}
+          onPress={() => deleteAdmin(item._id)}
         >
           <Text style={styles.btnText}>Delete</Text>
         </TouchableOpacity>
@@ -160,52 +197,55 @@ export default function GymAdminPanel() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>All Registered Admins</Text>
+      <Text style={styles.title}>SuperAdmin Panel</Text>
+
+      {/* Dashboard Cards */}
+      <View style={styles.cardContainer}>
+        <View style={styles.card}>
+          <Text style={styles.cardNumber}>{total}</Text>
+          <Text>Total</Text>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={[styles.cardNumber, { color: "green" }]}>{active}</Text>
+          <Text>Active</Text>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={[styles.cardNumber, { color: "red" }]}>{blocked}</Text>
+          <Text>Blocked</Text>
+        </View>
+      </View>
 
       {loading ? (
         <ActivityIndicator size="large" color="green" />
-      ) : gyms.length === 0 ? (
-        <Text style={{ marginTop: 20 }}>No Admins Found</Text>
       ) : (
-        <ScrollView horizontal>
-          <View>
-            <View style={styles.headerRow}>
-              <Text style={styles.headerText}>Gym</Text>
-              <Text style={styles.headerText}>Owner</Text>
-              <Text style={styles.headerText}>Email</Text>
-              <Text style={styles.headerText}>Mobile</Text>
-              <Text style={styles.headerText}>Address</Text>
-              <Text style={styles.headerText}>Role</Text>
-              <Text style={styles.headerText}>Actions</Text>
-            </View>
-
-            <FlatList
-              data={gyms}
-              keyExtractor={(item) => item._id}
-              renderItem={renderItem}
-              refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-              }
-            />
-          </View>
-        </ScrollView>
+        <FlatList
+          data={admins}
+          keyExtractor={(item) => item._id}
+          renderItem={renderItem}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={fetchAdmins} />
+          }
+          ListFooterComponent={<View style={{ height: 20 }} />}
+        />
       )}
 
       {/* MODAL */}
       <Modal visible={modalVisible} animationType="slide">
-        <ScrollView style={styles.modalContainer}>
-          {selectedGym && (
+        <ScrollView style={styles.modal}>
+          {selectedAdmin && (
             <>
-              <Text style={styles.modalTitle}>
-                {selectedGym.gymName} Details
-              </Text>
+              <Text style={styles.modalTitle}>{selectedAdmin.gymName}</Text>
 
-              <Text>Owner: {selectedGym.fullName}</Text>
-              <Text>Email: {selectedGym.email}</Text>
-              <Text>Mobile: {selectedGym.mobile}</Text>
-              <Text>Address: {selectedGym.gymAddress}</Text>
+              <Text>Owner: {selectedAdmin.fullName}</Text>
+              <Text>Email: {selectedAdmin.email}</Text>
+              <Text>Mobile: {selectedAdmin.mobile}</Text>
+              <Text>Address: {selectedAdmin.gymAddress}</Text>
+              <Text>Start Date: {formatDate(selectedAdmin.startDate)}</Text>
+              <Text>End Date: {formatDate(selectedAdmin.endDate)}</Text>
               <Text>
-                Subscription: {selectedGym.subscriptionMonths || 0} Months
+                Subscription: {selectedAdmin.subscriptionMonths} Months
               </Text>
 
               <TouchableOpacity
@@ -227,45 +267,88 @@ export default function GymAdminPanel() {
 //////////////////////////////////////////////////////////
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 10, backgroundColor: "#f4f4f4" },
-  title: { fontSize: 20, fontWeight: "bold", marginBottom: 10 },
+  container: { flex: 1, padding: 15, backgroundColor: "#f4f4f4" },
 
-  headerRow: {
-    flexDirection: "row",
-    backgroundColor: "#ddd",
-    padding: 10,
-    width: 1100,
+  title: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 15,
   },
-  headerText: { width: 150, fontWeight: "bold" },
+
+  cardContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 15,
+  },
+
+  card: {
+    backgroundColor: "#fff",
+    padding: 15,
+    borderRadius: 10,
+    width: "30%",
+    alignItems: "center",
+    elevation: 3,
+  },
+
+  cardNumber: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
 
   row: {
-    flexDirection: "row",
+    backgroundColor: "#fff",
     padding: 10,
-    borderBottomWidth: 1,
-    borderColor: "#ccc",
-    alignItems: "center",
-    width: 1100,
+    marginBottom: 8,
+    borderRadius: 8,
   },
-  cell: { width: 150, fontSize: 12 },
 
-  actionRow: {
+  cell: {
+    fontSize: 12,
+    marginBottom: 3,
+  },
+
+  actions: {
     flexDirection: "row",
-    width: 200,
     justifyContent: "space-between",
+    marginTop: 8,
   },
 
-  viewBtn: { backgroundColor: "#3498db", padding: 5, borderRadius: 4 },
-  deleteBtn: { backgroundColor: "red", padding: 5, borderRadius: 4 },
+  viewBtn: {
+    backgroundColor: "#3498db",
+    padding: 6,
+    borderRadius: 5,
+  },
 
-  btnText: { color: "#fff", fontSize: 11 },
+  blockBtn: {
+    padding: 6,
+    borderRadius: 5,
+  },
 
-  modalContainer: { padding: 20 },
-  modalTitle: { fontSize: 20, fontWeight: "bold", marginBottom: 10 },
+  deleteBtn: {
+    backgroundColor: "red",
+    padding: 6,
+    borderRadius: 5,
+  },
+
+  btnText: {
+    color: "#fff",
+    fontSize: 11,
+  },
+
+  modal: {
+    padding: 20,
+  },
+
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 15,
+  },
 
   closeBtn: {
-    backgroundColor: "#2ecc71",
+    backgroundColor: "green",
     padding: 10,
-    borderRadius: 6,
+    borderRadius: 8,
     marginTop: 20,
     alignItems: "center",
   },
