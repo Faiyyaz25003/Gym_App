@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import {
   Alert,
   FlatList,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,11 +13,22 @@ import {
   View,
 } from "react-native";
 
-const BASE_URL = "http://YOUR_PC_IP:5000/api/exercises";
+/* ============================= */
+/* 🔥 BASE URL CONFIGURATION */
+/* ============================= */
+
+// ⚠️ Replace with your PC IPv4 address
+const BASE_URL =
+  Platform.OS === "android"
+    ? "http://192.168.1.5:5000/api/exercises" // <-- CHANGE IP
+    : "http://localhost:5000/api/exercises";
+
+/* ============================= */
 
 export default function ExerciseScreen() {
   const [exercises, setExercises] = useState([]);
   const [editingId, setEditingId] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState({
     exerciseName: "",
@@ -28,57 +40,93 @@ export default function ExerciseScreen() {
     exerciseType: "",
   });
 
-  /* FETCH */
+  /* ============================= */
+  /* FETCH EXERCISES */
+  /* ============================= */
   const fetchExercises = async () => {
-    const res = await axios.get(BASE_URL);
-    setExercises(res.data);
+    try {
+      setLoading(true);
+      const res = await axios.get(BASE_URL);
+      setExercises(res.data);
+    } catch (error) {
+      console.log("FETCH ERROR:", error.message);
+      Alert.alert("Error", "Cannot connect to server");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     fetchExercises();
   }, []);
 
-  /* CREATE or UPDATE */
+  /* ============================= */
+  /* CREATE OR UPDATE */
+  /* ============================= */
   const handleSubmit = async () => {
-    if (editingId) {
-      await axios.put(`${BASE_URL}/${editingId}`, form);
-      setEditingId(null);
-    } else {
-      await axios.post(BASE_URL, form);
+    try {
+      if (editingId) {
+        await axios.put(`${BASE_URL}/${editingId}`, form);
+        setEditingId(null);
+      } else {
+        await axios.post(BASE_URL, form);
+      }
+
+      setForm({
+        exerciseName: "",
+        video: "",
+        shortDescription: "",
+        muscleGroup: "",
+        equipmentRequired: "",
+        difficultyLevel: "",
+        exerciseType: "",
+      });
+
+      fetchExercises();
+    } catch (error) {
+      console.log("SUBMIT ERROR:", error.message);
+      Alert.alert("Error", "Something went wrong");
     }
-
-    setForm({
-      exerciseName: "",
-      video: "",
-      shortDescription: "",
-      muscleGroup: "",
-      equipmentRequired: "",
-      difficultyLevel: "",
-      exerciseType: "",
-    });
-
-    fetchExercises();
   };
 
+  /* ============================= */
   /* DELETE */
+  /* ============================= */
   const deleteExercise = (id) => {
     Alert.alert("Delete", "Are you sure?", [
       { text: "Cancel" },
       {
         text: "Delete",
         onPress: async () => {
-          await axios.delete(`${BASE_URL}/${id}`);
-          fetchExercises();
+          try {
+            await axios.delete(`${BASE_URL}/${id}`);
+            fetchExercises();
+          } catch (error) {
+            Alert.alert("Error", "Delete failed");
+          }
         },
       },
     ]);
   };
 
+  /* ============================= */
   /* EDIT */
+  /* ============================= */
   const editExercise = (item) => {
-    setForm(item);
+    setForm({
+      exerciseName: item.exerciseName,
+      video: item.video,
+      shortDescription: item.shortDescription,
+      muscleGroup: item.muscleGroup,
+      equipmentRequired: item.equipmentRequired,
+      difficultyLevel: item.difficultyLevel,
+      exerciseType: item.exerciseType,
+    });
+
     setEditingId(item._id);
   };
+
+  /* ============================= */
 
   return (
     <ScrollView style={styles.container}>
@@ -130,6 +178,10 @@ export default function ExerciseScreen() {
     </ScrollView>
   );
 }
+
+/* ============================= */
+/* STYLES */
+/* ============================= */
 
 const styles = StyleSheet.create({
   container: { padding: 15 },
