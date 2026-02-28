@@ -5,7 +5,6 @@ import {
   ActivityIndicator,
   Alert,
   Image,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -13,13 +12,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-/* ============================= */
-/* 🔥 BASE URL CONFIGURATION */
-/* ============================= */
-
-const BASE_URL =
-  Platform.OS === "web" ? "http://localhost:5000" : "http://192.168.0.104:5000"; // ✅ Your WiFi IP
 
 /* ============================= */
 /* 🔐 LOGIN COMPONENT */
@@ -30,67 +22,69 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
+  const handleLogin = () => {
     if (!email.trim() || !password.trim()) {
       Alert.alert("Error", "Please enter email and password");
       return;
     }
 
-    try {
-      setLoading(true);
+    setLoading(true);
 
-      const response = await fetch(`${BASE_URL}/api/superadmin/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: email.trim(),
-          password: password.trim(),
-        }),
-      });
+    /* ============================= */
+    /* 🔥 DUMMY USERS */
+    /* ============================= */
 
-      // ✅ Safe JSON parsing
-      let data;
-      try {
-        data = await response.json();
-      } catch {
-        throw new Error("Invalid server response");
+    const dummyUsers = [
+      {
+        email: "admin@gmail.com",
+        password: "123456",
+        role: "admin",
+      },
+      {
+        email: "user@gmail.com",
+        password: "123456",
+        role: "user",
+      },
+      {
+        email: "home@gmail.com",
+        password: "123456",
+        role: "home",
+      },
+    ];
+
+    const foundUser = dummyUsers.find(
+      (user) =>
+        user.email === email.trim() && user.password === password.trim(),
+    );
+
+    setTimeout(() => {
+      setLoading(false);
+
+      if (!foundUser) {
+        Alert.alert("Login Failed ❌", "Invalid email or password");
+        return;
       }
 
-      if (!response.ok) {
-        throw new Error(data.message || "Login failed");
-      }
-
-      if (!data?.user?.role) {
-        throw new Error("Role not found in response");
-      }
-
-      Alert.alert("Success", "Login Successful ✅");
+      Alert.alert("Success ✅", "Login Successful");
 
       /* ============================= */
       /* 🚀 ROLE BASED NAVIGATION */
       /* ============================= */
 
-      switch (data.user.role) {
-        case "superadmin":
-          router.replace("/tabs/superAdminTabs");
-          break;
+      switch (foundUser.role) {
         case "admin":
           router.replace("/tabs/adminTabs");
           break;
         case "user":
           router.replace("/tabs/userTabs");
           break;
-        default:
+        case "home":
           router.replace("/tabs/homeUserTabs");
+          break;
+        default:
+          router.replace("/");
       }
-    } catch (error) {
-      console.log("Login Error:", error);
-      Alert.alert("Login Failed ❌", error.message || "Network error");
-    } finally {
-      setLoading(false);
-    }
+    }, 1000);
   };
 
   return (
@@ -135,14 +129,6 @@ export default function Login() {
             onChangeText={setPassword}
           />
         </View>
-
-        {/* Forgot Password */}
-        <TouchableOpacity
-          style={styles.forgot}
-          onPress={() => router.push("/auth/forgot-password")}
-        >
-          <Text style={styles.forgotText}>Forgot Password?</Text>
-        </TouchableOpacity>
 
         {/* Login Button */}
         <TouchableOpacity
@@ -220,15 +206,6 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     color: "#fff",
     fontSize: 15,
-  },
-  forgot: {
-    alignItems: "flex-end",
-    marginBottom: 20,
-  },
-  forgotText: {
-    color: "#22c55e",
-    fontSize: 13,
-    fontWeight: "500",
   },
   loginBtn: {
     backgroundColor: "#22c55e",

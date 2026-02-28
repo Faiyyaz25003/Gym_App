@@ -1,48 +1,73 @@
-import { useState } from "react";
-import { StyleSheet, Text, View, FlatList, TextInput } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
-/* 🔹 Dummy Trainers Data */
-const trainersData = [
-  {
-    id: "1",
-    name: "Rahul Sharma",
-    specialization: "Cardio Trainer",
-    experience: "5 Years",
-  },
-  {
-    id: "2",
-    name: "Neha Verma",
-    specialization: "Yoga Trainer",
-    experience: "3 Years",
-  },
-  {
-    id: "3",
-    name: "Aman Khan",
-    specialization: "Weight Trainer",
-    experience: "6 Years",
-  },
-  {
-    id: "4",
-    name: "Priya Singh",
-    specialization: "Zumba Trainer",
-    experience: "4 Years",
-  },
-];
+// Update this to your PC's LAN IP when testing on real device
+const BASE_URL = "http://localhost:5000/api/trainers";
 
 export default function ViewTrainer() {
+  const [trainers, setTrainers] = useState([]);
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  const filteredTrainers = trainersData.filter((trainer) =>
+  const fetchTrainers = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(BASE_URL);
+      if (res.data.success) {
+        setTrainers(res.data.trainers);
+      }
+    } catch (err) {
+      console.error("Failed to fetch trainers:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTrainers();
+  }, []);
+
+  const filteredTrainers = trainers.filter((trainer) =>
     trainer.name.toLowerCase().includes(search.toLowerCase()),
   );
 
   const renderTrainer = ({ item }) => (
     <View style={styles.card}>
-      <Ionicons name="person-circle" size={50} color="#2563eb" />
-      <Text style={styles.name}>{item.name}</Text>
-      <Text style={styles.text}>{item.specialization}</Text>
-      <Text style={styles.exp}>{item.experience}</Text>
+      {item.image ? (
+        <Image
+          source={{ uri: `http://192.168.1.100:5000/uploads/${item.image}` }}
+          style={styles.avatar}
+        />
+      ) : (
+        <Ionicons name="person-circle" size={60} color="#2563eb" />
+      )}
+      <View style={styles.info}>
+        <Text style={styles.name}>{item.name}</Text>
+        <Text style={styles.text}>
+          <Text style={{ fontWeight: "bold" }}>Mobile:</Text> {item.phone}
+        </Text>
+        <Text style={styles.text}>
+          <Text style={{ fontWeight: "bold" }}>E-Mail:</Text> {item.email}
+        </Text>
+        <Text style={styles.text}>
+          <Text style={{ fontWeight: "bold" }}>Experience:</Text>{" "}
+          {item.experience} Years
+        </Text>
+        <Text style={styles.text}>
+          <Text style={{ fontWeight: "bold" }}>Specialization:</Text>{" "}
+          {item.specialization}
+        </Text>
+      </View>
     </View>
   );
 
@@ -50,7 +75,6 @@ export default function ViewTrainer() {
     <View style={styles.container}>
       <Text style={styles.title}>👥 View Trainers</Text>
 
-      {/* 🔍 Search Bar */}
       <View style={styles.searchContainer}>
         <Ionicons name="search" size={20} color="#6b7280" />
         <TextInput
@@ -61,15 +85,16 @@ export default function ViewTrainer() {
         />
       </View>
 
-      {/* 🔳 Grid Cards */}
-      <FlatList
-        data={filteredTrainers}
-        keyExtractor={(item) => item.id}
-        renderItem={renderTrainer}
-        numColumns={2}
-        columnWrapperStyle={{ justifyContent: "space-between" }}
-        showsVerticalScrollIndicator={false}
-      />
+      {loading ? (
+        <ActivityIndicator size="large" color="#2563eb" />
+      ) : (
+        <FlatList
+          data={filteredTrainers}
+          keyExtractor={(item) => item._id}
+          renderItem={renderTrainer}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
     </View>
   );
 }
@@ -84,8 +109,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 12,
-    marginTop: 13,
-    textAlign: "left",
+    color: "#111827", // Darker heading color
   },
   searchContainer: {
     flexDirection: "row",
@@ -102,29 +126,31 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   card: {
+    flexDirection: "row",
     backgroundColor: "#fff",
-    width: "48%",
     padding: 15,
     borderRadius: 15,
     marginBottom: 15,
     alignItems: "center",
     elevation: 3,
   },
+  avatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+  },
+  info: {
+    marginLeft: 15,
+    flex: 1,
+  },
   name: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: "bold",
-    marginTop: 6,
-    textAlign: "center",
+    marginBottom: 4,
   },
   text: {
     fontSize: 13,
     color: "#6b7280",
-    marginTop: 2,
-    textAlign: "center",
-  },
-  exp: {
-    fontSize: 12,
-    color: "#9ca3af",
-    marginTop: 2,
+    marginBottom: 2,
   },
 });
