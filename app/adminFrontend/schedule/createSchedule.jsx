@@ -1,178 +1,194 @@
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { useState } from "react";
+import { Picker } from "@react-native-picker/picker";
+import axios from "axios";
+import { useEffect, useState } from "react";
 import {
+  Alert,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
 } from "react-native";
 
-export default function CreateSchedule() {
-  const router = useRouter();
+const BASE_URL = "http://localhost:5000"; // Change if needed
 
-  const [title, setTitle] = useState("");
-  const [time, setTime] = useState("");
-  const [note, setNote] = useState("");
-  const [selectedDays, setSelectedDays] = useState([]);
+const daysList = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
 
-  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+export default function ScheduleScreen() {
+  const [className, setClassName] = useState("");
+  const [days, setDays] = useState([]);
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
+  const [trainer, setTrainer] = useState("");
+  const [maxMembers, setMaxMembers] = useState("");
+  const [status, setStatus] = useState("Active");
+
+  const [trainers, setTrainers] = useState([]);
+  const [schedules, setSchedules] = useState([]);
+
+  useEffect(() => {
+    fetchTrainers();
+    fetchSchedules();
+  }, []);
+
+  const fetchTrainers = async () => {
+    const res = await axios.get(`${BASE_URL}/api/trainers/all`);
+    setTrainers(res.data);
+  };
+
+  const fetchSchedules = async () => {
+    const res = await axios.get(`${BASE_URL}/api/schedules`);
+    setSchedules(res.data);
+  };
 
   const toggleDay = (day) => {
-    if (selectedDays.includes(day)) {
-      setSelectedDays(selectedDays.filter((d) => d !== day));
+    if (days.includes(day)) {
+      setDays(days.filter((d) => d !== day));
     } else {
-      setSelectedDays([...selectedDays, day]);
+      setDays([...days, day]);
     }
   };
 
+  const createSchedule = async () => {
+    try {
+      await axios.post(`${BASE_URL}/api/schedules`, {
+        className,
+        days,
+        startTime,
+        endTime,
+        trainer,
+        maxMembers,
+        status,
+      });
+
+      Alert.alert("Success", "Schedule Created");
+      fetchSchedules();
+    } catch (error) {
+      Alert.alert("Error", error.message);
+    }
+  };
+
+  const deleteSchedule = async (id) => {
+    await axios.delete(`${BASE_URL}/api/schedules/${id}`);
+    fetchSchedules();
+  };
+
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
+    <ScrollView style={styles.container}>
+      <Text style={styles.title}>Create Schedule</Text>
+
+      <TextInput
+        placeholder="Class Name"
+        style={styles.input}
+        value={className}
+        onChangeText={setClassName}
+      />
+
+      <Text style={styles.label}>Select Days</Text>
+      {daysList.map((day) => (
+        <TouchableOpacity
+          key={day}
+          onPress={() => toggleDay(day)}
+          style={[
+            styles.dayButton,
+            days.includes(day) && { backgroundColor: "#4CAF50" },
+          ]}
+        >
+          <Text style={{ color: "#fff" }}>{day}</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Create Schedule</Text>
-      </View>
+      ))}
 
-      {/* Card */}
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Schedule Details</Text>
+      <TextInput
+        placeholder="Start Time"
+        style={styles.input}
+        value={startTime}
+        onChangeText={setStartTime}
+      />
 
-        <TextInput
-          placeholder="Schedule Title (Workout / Diet)"
-          style={styles.input}
-          value={title}
-          onChangeText={setTitle}
-        />
+      <TextInput
+        placeholder="End Time"
+        style={styles.input}
+        value={endTime}
+        onChangeText={setEndTime}
+      />
 
-        <TextInput
-          placeholder="Time (eg: 6:00 AM)"
-          style={styles.input}
-          value={time}
-          onChangeText={setTime}
-        />
+      <Text style={styles.label}>Select Trainer</Text>
+      <Picker
+        selectedValue={trainer}
+        onValueChange={(itemValue) => setTrainer(itemValue)}
+      >
+        <Picker.Item label="Select Trainer" value="" />
+        {trainers.map((t) => (
+          <Picker.Item key={t._id} label={t.fullName} value={t._id} />
+        ))}
+      </Picker>
 
-        {/* Multiple Days Selection */}
-        <Text style={styles.label}>Select Days</Text>
-        <View style={styles.daysContainer}>
-          {days.map((day) => (
-            <TouchableOpacity
-              key={day}
-              style={[
-                styles.dayButton,
-                selectedDays.includes(day) && styles.selectedDay,
-              ]}
-              onPress={() => toggleDay(day)}
-            >
-              <Text
-                style={[
-                  styles.dayText,
-                  selectedDays.includes(day) && styles.selectedDayText,
-                ]}
-              >
-                {day}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+      <TextInput
+        placeholder="Max Members"
+        style={styles.input}
+        value={maxMembers}
+        onChangeText={setMaxMembers}
+        keyboardType="numeric"
+      />
 
-        <TextInput
-          placeholder="Notes (optional)"
-          style={[styles.input, styles.textArea]}
-          value={note}
-          onChangeText={setNote}
-          multiline
-        />
-      </View>
+      <Picker
+        selectedValue={status}
+        onValueChange={(itemValue) => setStatus(itemValue)}
+      >
+        <Picker.Item label="Active" value="Active" />
+        <Picker.Item label="Inactive" value="Inactive" />
+      </Picker>
 
-      {/* Button */}
-      <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText}>Save Schedule</Text>
+      <TouchableOpacity style={styles.button} onPress={createSchedule}>
+        <Text style={{ color: "#fff" }}>Create Schedule</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f2f4f7",
-    padding: 16,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 20,
-    marginTop: 13,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    marginLeft: 10,
-  },
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 14,
-    padding: 16,
-    marginBottom: 30,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 12,
-  },
+  container: { padding: 15 },
+  title: { fontSize: 20, fontWeight: "bold", marginVertical: 10 },
   input: {
-    backgroundColor: "#f1f3f5",
-    borderRadius: 10,
-    padding: 14,
-    fontSize: 15,
-    marginBottom: 12,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "600",
-    marginBottom: 8,
-  },
-  daysContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    marginBottom: 15,
-  },
-  dayButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    backgroundColor: "#e9ecef",
-    marginRight: 8,
-    marginBottom: 8,
-  },
-  selectedDay: {
-    backgroundColor: "#2f9e8f",
-  },
-  dayText: {
-    fontSize: 13,
-    color: "#333",
-  },
-  selectedDayText: {
-    color: "#fff",
-    fontWeight: "600",
-  },
-  textArea: {
-    height: 80,
-    textAlignVertical: "top",
+    borderWidth: 1,
+    padding: 10,
+    marginVertical: 5,
+    borderRadius: 5,
   },
   button: {
-    backgroundColor: "#2f9e8f",
-    padding: 16,
-    borderRadius: 12,
+    backgroundColor: "#2196F3",
+    padding: 12,
+    alignItems: "center",
+    marginVertical: 10,
+    borderRadius: 5,
+  },
+  card: {
+    borderWidth: 1,
+    padding: 10,
+    marginVertical: 5,
+    borderRadius: 5,
+  },
+  deleteBtn: {
+    backgroundColor: "red",
+    padding: 8,
+    marginTop: 5,
+    alignItems: "center",
+    borderRadius: 5,
+  },
+  dayButton: {
+    backgroundColor: "#888",
+    padding: 8,
+    marginVertical: 3,
+    borderRadius: 5,
     alignItems: "center",
   },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "700",
-  },
+  label: { marginTop: 10, fontWeight: "bold" },
 });

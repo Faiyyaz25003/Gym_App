@@ -1,124 +1,113 @@
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
+  View,
+  Text,
   FlatList,
   StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+  ActivityIndicator,
+  RefreshControl,
 } from "react-native";
+import axios from "axios";
 
-const schedules = [
-  {
-    id: "1",
-    title: "Morning Workout",
-    time: "6:00 AM",
-    days: ["Mon", "Wed", "Fri"],
-    note: "Chest & cardio",
-  },
-  {
-    id: "2",
-    title: "Evening Yoga",
-    time: "7:30 PM",
-    days: ["Tue", "Thu", "Sat"],
-    note: "Stretching & breathing",
-  },
-];
+export default function ScheduleListScreen() {
+  const [schedules, setSchedules] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-export default function ViewSchedule() {
-  const router = useRouter();
+  const fetchSchedules = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/schedules");
+      setSchedules(res.data);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSchedules();
+  }, []);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchSchedules();
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#4CAF50" />
+      </View>
+    );
+  }
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>View Schedules</Text>
-      </View>
+    <FlatList
+      data={schedules}
+      keyExtractor={(item) => item._id}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+      renderItem={({ item }) => (
+        <View style={styles.card}>
+          <Text style={styles.className}>{item.className}</Text>
 
-      {/* List */}
-      <FlatList
-        data={schedules}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingBottom: 20 }}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text style={styles.title}>{item.title}</Text>
+          <Text style={styles.text}>📅 Days: {item.days.join(", ")}</Text>
 
-            <Text style={styles.time}>⏰ {item.time}</Text>
+          <Text style={styles.text}>
+            ⏰ Time: {item.startTime} - {item.endTime}
+          </Text>
 
-            {/* Days */}
-            <View style={styles.daysContainer}>
-              {item.days.map((day) => (
-                <View key={day} style={styles.dayChip}>
-                  <Text style={styles.dayText}>{day}</Text>
-                </View>
-              ))}
-            </View>
+          <Text style={styles.text}>👨‍🏫 Trainer: {item.trainer?.fullName}</Text>
 
-            {item.note ? <Text style={styles.note}>📝 {item.note}</Text> : null}
-          </View>
-        )}
-      />
-    </View>
+          <Text style={styles.text}>👥 Max Members: {item.maxMembers}</Text>
+
+          <Text
+            style={[
+              styles.status,
+              item.status === "Active" ? styles.active : styles.inactive,
+            ]}
+          >
+            {item.status}
+          </Text>
+        </View>
+      )}
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f2f4f7",
-    padding: 16,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 20,
-    marginTop: 13,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    marginLeft: 10,
-  },
   card: {
     backgroundColor: "#fff",
-    borderRadius: 14,
-    padding: 16,
-    marginBottom: 14,
+    padding: 15,
+    margin: 10,
+    borderRadius: 10,
+    elevation: 3,
   },
-  title: {
-    fontSize: 17,
-    fontWeight: "700",
-    marginBottom: 6,
+  className: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 8,
   },
-  time: {
+  text: {
     fontSize: 14,
-    color: "#555",
-    marginBottom: 8,
+    marginBottom: 4,
   },
-  daysContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    marginBottom: 8,
+  status: {
+    marginTop: 8,
+    fontWeight: "bold",
   },
-  dayChip: {
-    backgroundColor: "#2f9e8f",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 20,
-    marginRight: 6,
-    marginBottom: 6,
+  active: {
+    color: "green",
   },
-  dayText: {
-    color: "#fff",
-    fontSize: 12,
-    fontWeight: "600",
+  inactive: {
+    color: "red",
   },
-  note: {
-    fontSize: 13,
-    color: "#666",
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
