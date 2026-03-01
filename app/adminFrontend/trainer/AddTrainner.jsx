@@ -1,17 +1,15 @@
-import React, { useEffect, useState } from "react";
+import axios from "axios";
+import * as ImagePicker from "expo-image-picker";
+import { useEffect, useState } from "react";
 import {
-  View,
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  Image,
-  FlatList,
-  StyleSheet,
-  Alert,
-  ScrollView,
 } from "react-native";
-import * as ImagePicker from "expo-image-picker";
-import axios from "axios";
 
 const BASE_URL = "http://localhost:5000/api/trainers";
 const IMAGE_URL = "http://localhost:5000/uploads/";
@@ -117,42 +115,6 @@ export default function TrainerScreen() {
           {editingId ? "Update Trainer" : "Save Trainer"}
         </Text>
       </TouchableOpacity>
-
-      <Text style={styles.title}>Trainer List</Text>
-
-      <FlatList
-        data={trainers}
-        keyExtractor={(item) => item._id}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            {item.photo && (
-              <Image
-                source={{ uri: IMAGE_URL + item.photo }}
-                style={styles.listImage}
-              />
-            )}
-            <Text>{item.fullName}</Text>
-            <Text>{item.specialization}</Text>
-
-            <TouchableOpacity
-              onPress={() => {
-                setEditingId(item._id);
-                setForm(item);
-              }}
-              style={styles.editBtn}
-            >
-              <Text>Edit</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => handleDelete(item._id)}
-              style={styles.deleteBtn}
-            >
-              <Text style={{ color: "#fff" }}>Delete</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      />
     </ScrollView>
   );
 }
